@@ -42,7 +42,7 @@ export async function update_score(username: string, score: number, date: string
     const userStats = ref.data();
     if (userStats) {
         const average: number = (userStats.av + Number(score))/(userStats.games+1);
-        const game: number = userStats.games;
+        const game: number = userStats.games + 1;
         let win: number = userStats.wins;
         if (score < 7) {
           win += 1;

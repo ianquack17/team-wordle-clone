@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 import router from '../router/index.ts'
 import { useAuthStore } from '../stores/auth.ts'
-import { create_user } from '../router/statRoutes.ts'
 
 const auth = useAuthStore()
 
@@ -25,7 +24,6 @@ async function submitSignup() {
   }
 
   await auth.registerUser(email.value, password.value)
-  await create_user(email.value)
 
   if (auth.user) {
     router.push('/game')

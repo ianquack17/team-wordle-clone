@@ -34,7 +34,7 @@ onMounted(async () => {
 
         <div class="stat-box">
           <span class="stat-label">Average Guesses</span>
-          <span class="stat-value">{{ stats.averageGuesses }}</span>
+          <span class="stat-value">{{ stats.formattedAverageGuesses }}</span>
         </div>
 
         <div class="stat-box">

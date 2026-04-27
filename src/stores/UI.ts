@@ -15,6 +15,7 @@ type GameUIState = {
   currentRow: number
   currentCol: number
   message: string
+  gameComplete: boolean
   word: string
   date: string
   user: string
@@ -33,6 +34,7 @@ export const useGameUIStore = defineStore('gameUI', {
     currentRow: 0,
     currentCol: 0,
     message: '',
+    gameComplete: false,
     word: '',
     date: '',
     user: ''
@@ -49,16 +51,23 @@ export const useGameUIStore = defineStore('gameUI', {
       this.currentRow = 0
       this.currentCol = 0
       this.message = ''
+      this.gameComplete = false
+    },
+    resetGameState() {
+      this.resetBoard()
+      this.word = ''
+      this.date = ''
+      this.user = ''
     },
     addLetter(letter: string) {
-      if (this.currentRow > 5 || this.currentCol > 4) return
+      if (this.gameComplete || this.currentRow > 5 || this.currentCol > 4) return
       this.rows[this.currentRow]![this.currentCol]!.letter = letter.toUpperCase()
       this.rows[this.currentRow]![this.currentCol]!.status = 'filled'
       this.currentCol++
       this.message = ''
     },
     removeLetter() {
-      if (this.currentCol === 0 || this.currentRow > 5) return
+      if (this.gameComplete || this.currentCol === 0 || this.currentRow > 5) return
       this.currentCol--
       this.rows[this.currentRow]![this.currentCol]!.letter = ''
       this.rows[this.currentRow]![this.currentCol]!.status = 'empty'
@@ -74,6 +83,9 @@ export const useGameUIStore = defineStore('gameUI', {
       this.user = user;
     },
     submitGuess(guess: string, word: string) {
+      if (this.gameComplete) {
+        return
+      }
       if (this.currentGuess.length < 5) {
         this.message = 'Not enough letters'
         return
@@ -91,6 +103,7 @@ export const useGameUIStore = defineStore('gameUI', {
           this.currentRow++;
           if (this.currentRow > 5) {
             this.message = 'You lost'
+            this.gameComplete = true
             play_game(this.user, this.date);
             return
           }
@@ -99,6 +112,7 @@ export const useGameUIStore = defineStore('gameUI', {
         }
       }
       this.message = 'You won';
+      this.gameComplete = true
       update_score(this.user, this.currentRow+1, this.date);
     }
   }

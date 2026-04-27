@@ -18,6 +18,11 @@ export const useStatsStore = defineStore('stats', {
     bestGame: 0,
     winDates: []
   }),
+  getters: {
+    formattedAverageGuesses(state): string {
+      return Number(state.averageGuesses).toFixed(2)
+    }
+  },
   actions: {
     async update(user: User, score: number, date: string) {
       if (user.email != null) {

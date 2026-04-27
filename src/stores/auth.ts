@@ -5,6 +5,21 @@ import { create_user } from "@/router/statRoutes";
 
 const auth = getAuth();
 
+function toFriendlyAuthError(error: unknown, fallbackMessage: string): Error {
+    if (typeof error === 'object' && error !== null && 'code' in error) {
+        const code = String(error.code);
+        if (code === 'auth/invalid-credential' || code === 'auth/wrong-password' || code === 'auth/user-not-found') {
+            return new Error('Incorrect username or password');
+        }
+    }
+
+    if (error instanceof Error) {
+        return error;
+    }
+
+    return new Error(fallbackMessage);
+}
+
 interface AuthState {
   user: User | null;
   accessToken: string | null;
@@ -30,7 +45,7 @@ export const useAuthStore = defineStore('auth', {
                 this.user = userCredential.user;
                 await create_user(email);
             } catch (error: unknown) {
-                if (error instanceof Error) {this.error = error;}
+                this.error = toFriendlyAuthError(error, 'Unable to create account');
             }
         },
         async login(email: string, password: string) {
@@ -39,7 +54,7 @@ export const useAuthStore = defineStore('auth', {
                 const userCredential = await signInWithEmailAndPassword(auth, email, password);
                 this.user = userCredential.user;
             } catch (error: unknown) {
-                if (error instanceof Error) {this.error = error;}
+                this.error = toFriendlyAuthError(error, 'Unable to sign in');
             }
         },
         setUser(user: User | null) {

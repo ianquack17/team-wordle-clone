@@ -1,20 +1,51 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import router from '../router/index.ts'
 import GuessGrid from '../components/guessgrid.vue'
 import OnScreenKeyboard from '../components/OnScreenKeyboard.vue'
 import { useAuthStore } from '../stores/auth.ts'
 import { onAuthStateChanged, getAuth } from 'firebase/auth';
-import { useGameUIStore } from '../stores/UI.ts'
-import { get_word, guess_word } from '../router/wordRoutes.ts';
+import { useGameUIStore, type TileStatus } from '../stores/UI.ts'
+import { get_word } from '../router/wordRoutes.ts';
 import { date_convert } from '../../util/date.ts'
 
 const authStore = useAuthStore()
 const game = useGameUIStore()
 
+const statusPriority: Record<TileStatus, number> = {
+  empty: 0,
+  filled: 1,
+  absent: 2,
+  present: 3,
+  correct: 4
+}
+
+const keyStates = computed<Partial<Record<string, TileStatus>>>(() => {
+  const states: Partial<Record<string, TileStatus>> = {}
+
+  for (const row of game.rows) {
+    for (const tile of row) {
+      if (!tile.letter || tile.status === 'empty' || tile.status === 'filled') {
+        continue
+      }
+
+      const currentStatus = states[tile.letter]
+      if (!currentStatus || statusPriority[tile.status] > statusPriority[currentStatus]) {
+        states[tile.letter] = tile.status
+      }
+    }
+  }
+
+  return states
+})
+
 onMounted(async () => {
   onAuthStateChanged(getAuth(), (user) => {
     if (user) {
+      const isDifferentUser = game.user !== '' && game.user !== user.email;
+      if (isDifferentUser) {
+        game.resetGameState();
+      }
       authStore.setUser(user);
       game.setUser(user.email!);
     } else {
@@ -24,7 +55,7 @@ onMounted(async () => {
   });
   const date: string = date_convert(new Date);
   const word: string = await get_word(date);
-  if (game.date === null) {
+  if (!game.date) {
     game.setDate(date);
   } else if (game.date !== date) {
     game.resetBoard()
@@ -59,7 +90,8 @@ function pressBackspace() {
 
       <p class="message">{{ game.message }}</p>
 
-      <OnScreenKeyboard v-if="game.message !== 'You won' && game.message !== 'You lost'"
+      <OnScreenKeyboard v-if="!game.gameComplete"
+      :key-states="keyStates"
       @key="pressKey" @enter="pressEnter" @backspace="pressBackspace" />
     </div>
   </section>
