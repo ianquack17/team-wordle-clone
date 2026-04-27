@@ -31,6 +31,22 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Verify Firebase env present (no values)
+        run: |
+          missing=0
+          for k in VITE_apiKey VITE_authDomain VITE_projectId VITE_storageBucket VITE_messagingSenderId VITE_appId VITE_measurementId; do
+            if [ -z "${!k:-}" ]; then
+              echo "MISSING: $k"
+              missing=1
+            else
+              echo "OK: $k (len=${#k})"
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "One or more required VITE_* env vars are missing."
+            exit 1
+          fi
+
       - name: Build site
         run: npm run build-only
         env:
