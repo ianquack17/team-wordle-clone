@@ -18,6 +18,14 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      VITE_apiKey: ${{ secrets.VITE_APIKEY }}
+      VITE_authDomain: ${{ secrets.VITE_AUTHDOMAIN }}
+      VITE_projectId: ${{ secrets.VITE_PROJECTID }}
+      VITE_storageBucket: ${{ secrets.VITE_STORAGEBUCKET }}
+      VITE_messagingSenderId: ${{ secrets.VITE_MESSAGINGSENDERID }}
+      VITE_appId: ${{ secrets.VITE_APPID }}
+      VITE_measurementId: ${{ secrets.VITE_MEASUREMENTID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -49,14 +57,6 @@ jobs:
 
       - name: Build site
         run: npm run build-only
-        env:
-          VITE_apiKey: ${{ secrets.VITE_APIKEY }}
-          VITE_authDomain: ${{ secrets.VITE_AUTHDOMAIN }}
-          VITE_projectId: ${{ secrets.VITE_PROJECTID }}
-          VITE_storageBucket: ${{ secrets.VITE_STORAGEBUCKET }}
-          VITE_messagingSenderId: ${{ secrets.VITE_MESSAGINGSENDERID }}
-          VITE_appId: ${{ secrets.VITE_APPID }}
-          VITE_measurementId: ${{ secrets.VITE_MEASUREMENTID }}
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
